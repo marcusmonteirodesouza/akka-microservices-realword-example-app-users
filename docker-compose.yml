@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  db:
+    image: "postgres:14.2-alpine"
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - ./src/main/resources/schema/postgres:/docker-entrypoint-initdb.d
+      - ./postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PORT=${DB_PORT}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
