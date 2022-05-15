@@ -1,11 +1,12 @@
 package app.realworld
 
+import CustomExceptions.AlreadyExistsException
+
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.EntityTypeKey
 import akka.pattern.StatusReply
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.state.scaladsl.{DurableStateBehavior, Effect}
-import app.realworld.CustomExceptions.AlreadyExistsException
 import org.mindrot.jbcrypt.BCrypt
 
 object PersistentUser {

@@ -11,7 +11,6 @@ import akka.util.Timeout
 import spray.json.{DefaultJsonProtocol, NullOptions, RootJsonFormat}
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
 
 final case class User(username: String,
                       email: String,
@@ -56,7 +55,8 @@ trait JsonFormats
 
 class Routes(system: ActorSystem[_]) extends Directives with JsonFormats {
   private implicit val timeout
-    : Timeout = 10.seconds // TODO(Marcus): Add configuration for this
+    : Timeout = Timeout.create(
+    system.settings.config.getDuration("routes.ask-timeout"))
 
   private val sharding = ClusterSharding(system)
 
