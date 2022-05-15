@@ -1,15 +1,15 @@
 package app.realworld
 
+import CustomExceptions.AlreadyExistsException
+
 import akka.actor.typed.ActorSystem
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.{Directives, Route}
-import akka.persistence.typed.PersistenceId
+import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route}
 import akka.util.Timeout
-import spray.json.{DefaultJsonProtocol, RootJsonFormat}
+import spray.json.{DefaultJsonProtocol, NullOptions, RootJsonFormat}
 
-import java.util.UUID
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
@@ -27,7 +27,13 @@ final case class RegisterUserResponse(user: User)
 
 final case class GetCurrentUserResponse(user: User)
 
-trait JsonFormats extends SprayJsonSupport with DefaultJsonProtocol {
+final case class ErrorResponse(errors: ErrorResponseErrors)
+final case class ErrorResponseErrors(body: Seq[String])
+
+trait JsonFormats
+    extends SprayJsonSupport
+    with DefaultJsonProtocol
+    with NullOptions {
   implicit val userJsonFormat: RootJsonFormat[User] = jsonFormat5(User)
 
   implicit val registerUserRequestUserFormat
@@ -41,23 +47,35 @@ trait JsonFormats extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val getCurrentUserResponseFormat
     : RootJsonFormat[GetCurrentUserResponse] = jsonFormat1(
     GetCurrentUserResponse)
+
+  implicit val errorResponseErrorsFormat: RootJsonFormat[ErrorResponseErrors] =
+    jsonFormat1(ErrorResponseErrors)
+  implicit val errorResponseFormat: RootJsonFormat[ErrorResponse] = jsonFormat1(
+    ErrorResponse)
 }
 
 class Routes(system: ActorSystem[_]) extends Directives with JsonFormats {
-  private implicit val timeout: Timeout = 10.seconds
+  private implicit val timeout
+    : Timeout = 10.seconds // TODO(Marcus): Add configuration for this
 
   private val sharding = ClusterSharding(system)
 
   sharding.init(Entity(typeKey = PersistentUser.TypeKey) { entityContext =>
-    PersistentUser(entityContext.entityId,
-                   PersistenceId.ofUniqueId(entityContext.entityId))
+    PersistentUser(entityContext.entityId)
   })
+
+  implicit def customExceptionHandler: ExceptionHandler =
+    ExceptionHandler {
+      case AlreadyExistsException(message, _) =>
+        complete(
+          StatusCodes.UnprocessableEntity,
+          ErrorResponse(errors = ErrorResponseErrors(body = Seq(message))))
+    }
 
   private def registerUser(username: String,
                            email: String,
                            password: String): Future[PersistentUser.User] = {
-    val userId = UUID.randomUUID().toString
-    val userRef = sharding.entityRefFor(PersistentUser.TypeKey, userId)
+    val userRef = sharding.entityRefFor(PersistentUser.TypeKey, username)
     userRef.askWithStatus(
       replyTo =>
         PersistentUser.RegisterUser(username = username,
@@ -66,26 +84,25 @@ class Routes(system: ActorSystem[_]) extends Directives with JsonFormats {
                                     replyTo = replyTo))
   }
 
-  val routes: Route =
-    concat(pathEndOrSingleSlash {
-      concat {
-        post {
-          entity(as[RegisterUserRequest]) {
-            request =>
-              onSuccess(
-                registerUser(username = request.user.username,
-                             email = request.user.email,
-                             password = request.user.password)) { user =>
-                val response = RegisterUserResponse(
-                  user = User(username = user.username,
-                              email = user.email,
-                              token = "",
-                              bio = user.bio,
-                              image = user.image))
-                complete(StatusCodes.Created, response)
-              }
-          }
+  val routes: Route = Route.seal(concat(pathEndOrSingleSlash {
+    concat {
+      post {
+        entity(as[RegisterUserRequest]) {
+          request =>
+            onSuccess(
+              registerUser(username = request.user.username,
+                           email = request.user.email,
+                           password = request.user.password)) { user =>
+              val response = RegisterUserResponse(
+                user = User(username = user.username,
+                            email = user.email,
+                            token = "",
+                            bio = user.bio,
+                            image = user.image))
+              complete(StatusCodes.Created, response)
+            }
         }
       }
-    })
+    }
+  }))
 }
