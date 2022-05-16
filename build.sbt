@@ -9,6 +9,7 @@ lazy val root = (project in file("."))
   )
 
 val AkkaVersion = "2.6.19"
+val AkkaManagementVersion = "1.1.3"
 val AkkaHttpVersion = "10.2.9"
 val SlickVersion = "3.3.3"
 libraryDependencies ++= Seq(
@@ -21,6 +22,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % SlickVersion,
   "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
   "com.typesafe.akka" %% "akka-cluster-sharding-typed" % AkkaVersion,
+  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % AkkaManagementVersion,
+  "com.typesafe.akka" %% "akka-discovery" % AkkaVersion,
   "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
   "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,

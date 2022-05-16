@@ -54,9 +54,8 @@ trait JsonFormats
 }
 
 class Routes(system: ActorSystem[_]) extends Directives with JsonFormats {
-  private implicit val timeout
-    : Timeout = Timeout.create(
-    system.settings.config.getDuration("routes.ask-timeout"))
+  private implicit val timeout: Timeout = Timeout.create(
+    system.settings.config.getDuration("users-service.ask-timeout"))
 
   private val sharding = ClusterSharding(system)
 
