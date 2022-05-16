@@ -2,8 +2,8 @@ package app.realworld
 
 import CustomExceptions.AlreadyExistsException
 
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.cluster.sharding.typed.scaladsl.EntityTypeKey
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
+import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityContext, EntityTypeKey}
 import akka.pattern.StatusReply
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.state.scaladsl.{DurableStateBehavior, Effect}
@@ -32,15 +32,11 @@ object PersistentUser {
       command match {
         case RegisterUser(_, _, _, replyTo) =>
           Effect.reply(replyTo)(
-            StatusReply.error(
-              AlreadyExistsException(("User already exists"))))
+            StatusReply.error(AlreadyExistsException(("User already exists"))))
         case GetUser(replyTo) =>
           Effect.reply(replyTo)(StatusReply.success(this))
       }
   }
-
-  val TypeKey: EntityTypeKey[Command] =
-    EntityTypeKey[Command]("PersistentUser")
 
   def onFirstCommand(command: Command): ReplyEffect =
     command match {
@@ -59,6 +55,17 @@ object PersistentUser {
       case GetUser(replyTo) =>
         Effect.reply(replyTo)(StatusReply.error("User not found"))
     }
+
+  val TypeKey: EntityTypeKey[Command] =
+    EntityTypeKey[Command]("PersistentUser")
+
+  def init(system: ActorSystem[_]): Unit = {
+    val behaviorFactory: EntityContext[Command] => Behavior[Command] = {
+      entityContext =>
+        PersistentUser(entityContext.entityId)
+    }
+    ClusterSharding(system).init(Entity(TypeKey)(behaviorFactory))
+  }
 
   def apply(username: String): Behavior[Command] =
     DurableStateBehavior.withEnforcedReplies[Command, Option[User]](

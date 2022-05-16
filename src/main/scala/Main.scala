@@ -3,16 +3,23 @@ package app.realworld
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
+import org.slf4j.LoggerFactory
 
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
 object Main {
-  private def startHttpServer(routes: Route)(
-      implicit system: ActorSystem[_]): Unit = {
+  val logger = LoggerFactory.getLogger("users.Main")
+
+  private def init()(implicit system: ActorSystem[_]): Unit = {
     import system.executionContext
 
-    val serverBinding = Http().newServerAt("localhost", 8080).bind(routes)
+    PersistentUser.init(system)
+
+    val routes = new Routes(system).routes
+
+    val serverBinding =
+      Http()(system).newServerAt("localhost", 8080).bind(routes)
     serverBinding.onComplete {
       case Success(binding) =>
         val address = binding.localAddress
@@ -25,13 +32,16 @@ object Main {
         system.terminate()
     }
   }
-  def main(args: Array[String]): Unit = {
-    val guardian = Behaviors.setup[Nothing] { context =>
-      val routes = new Routes(context.system)
-      startHttpServer(routes.routes)(context.system)
-      Behaviors.empty
-    }
 
-    ActorSystem[Nothing](guardian, "usersServer")
+  def main(args: Array[String]): Unit = {
+    val system = ActorSystem[Nothing](Behaviors.empty, "usersServer")
+
+    try {
+      init()(system)
+    } catch {
+      case NonFatal(exception) =>
+        logger.error("Terminating due to initialization failure.", exception)
+        system.terminate()
+    }
   }
 }

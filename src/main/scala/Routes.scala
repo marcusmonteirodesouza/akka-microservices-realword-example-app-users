@@ -3,7 +3,7 @@ package app.realworld
 import CustomExceptions.AlreadyExistsException
 
 import akka.actor.typed.ActorSystem
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity}
+import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route}
@@ -59,10 +59,6 @@ class Routes(system: ActorSystem[_]) extends Directives with JsonFormats {
     system.settings.config.getDuration("routes.ask-timeout"))
 
   private val sharding = ClusterSharding(system)
-
-  sharding.init(Entity(typeKey = PersistentUser.TypeKey) { entityContext =>
-    PersistentUser(entityContext.entityId)
-  })
 
   implicit def customExceptionHandler: ExceptionHandler =
     ExceptionHandler {
