@@ -4,7 +4,7 @@ ThisBuild / scalaVersion := "2.13.8"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "users",
+    name := "users-service",
     idePackagePrefix := Some("app.realworld")
   )
 
@@ -22,8 +22,10 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % SlickVersion,
   "com.typesafe.slick" %% "slick-hikaricp" % SlickVersion,
   "com.typesafe.akka" %% "akka-cluster-sharding-typed" % AkkaVersion,
-  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % AkkaManagementVersion,
   "com.typesafe.akka" %% "akka-discovery" % AkkaVersion,
+  "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % AkkaManagementVersion,
+  "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % AkkaManagementVersion,
+  "com.lightbend.akka.management" %% "akka-management-cluster-http" % AkkaManagementVersion,
   "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
   "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
@@ -32,4 +34,10 @@ libraryDependencies ++= Seq(
   "org.mindrot" % "jbcrypt" % "0.4"
 )
 
-enablePlugins(JavaAppPackaging)
+enablePlugins(JavaAppPackaging, DockerPlugin)
+
+dockerExposedPorts := Seq(8080, 8558, 25520)
+dockerUpdateLatest := true
+//dockerUsername := sys.props.get("docker.username")
+//dockerRepository := sys.props.get("docker.registry")
+dockerBaseImage := "adoptopenjdk:11-jre-hotspot"

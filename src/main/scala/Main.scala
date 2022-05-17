@@ -13,8 +13,10 @@ import scala.util.{Failure, Success}
 object Main {
   val logger = LoggerFactory.getLogger("users-service.Main")
 
-  private def init()(implicit system: ActorSystem[_]): Unit = {
-    import system.executionContext
+  private def init(system: ActorSystem[_]): Unit = {
+    import akka.actor.typed.scaladsl.adapter._
+    implicit val classicSystem = system.toClassic
+    implicit val ec = system.executionContext
 
     AkkaManagement(system).start()
     ClusterBootstrap(system).start()
@@ -25,8 +27,7 @@ object Main {
 
     val serverBinding =
       Http()(system)
-        .newServerAt(system.settings.config.getString("users-service.host"),
-                     system.settings.config.getInt("users-service.port"))
+        .newServerAt("0.0.0.0", 8080)
         .bind(routes)
     serverBinding.onComplete {
       case Success(binding) =>
@@ -42,10 +43,10 @@ object Main {
   }
 
   def main(args: Array[String]): Unit = {
-    val system = ActorSystem[Nothing](Behaviors.empty, "usersService")
+    val system = ActorSystem[Nothing](Behaviors.empty, "users-service")
 
     try {
-      init()(system)
+      init(system)
     } catch {
       case NonFatal(exception) =>
         logger.error("Terminating due to initialization failure.", exception)
