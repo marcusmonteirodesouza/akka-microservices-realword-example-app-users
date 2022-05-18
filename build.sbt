@@ -38,6 +38,4 @@ enablePlugins(JavaAppPackaging, DockerPlugin)
 
 dockerExposedPorts := Seq(8080, 8558, 25520)
 dockerUpdateLatest := true
-//dockerUsername := sys.props.get("docker.username")
-//dockerRepository := sys.props.get("docker.registry")
 dockerBaseImage := "adoptopenjdk:11-jre-hotspot"

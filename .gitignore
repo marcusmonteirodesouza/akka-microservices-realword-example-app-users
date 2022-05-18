@@ -195,6 +195,9 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Backend files
+**/backend.tf
+
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
