@@ -5,10 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6951bef5-5fb0-4cea-85b0-81fecba77a69" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.sbt" beforeDir="false" afterPath="$PROJECT_DIR$/build.sbt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployment/gcp/terraform/environments/dev/.terraform.lock.hcl" beforeDir="false" afterPath="$PROJECT_DIR$/deployment/gcp/terraform/environments/dev/.terraform.lock.hcl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployment/gcp/terraform/environments/dev/main.tf" beforeDir="false" afterPath="$PROJECT_DIR$/deployment/gcp/terraform/environments/dev/main.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployment/gcp/terraform/environments/dev/variables.tf" beforeDir="false" afterPath="$PROJECT_DIR$/deployment/gcp/terraform/environments/dev/variables.tf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kubernetes/akka-cluster.yml" beforeDir="false" afterPath="$PROJECT_DIR$/kubernetes/akka-cluster.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
