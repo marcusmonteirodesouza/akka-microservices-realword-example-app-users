@@ -10,6 +10,10 @@ variable "network" {
   type = string
 }
 
+variable "image_url" {
+  type = string
+}
+
 variable "gke_ip_cidr_range" {
   type = string
 }

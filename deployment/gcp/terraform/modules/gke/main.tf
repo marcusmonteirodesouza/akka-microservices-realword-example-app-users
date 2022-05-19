@@ -1,6 +1,5 @@
 data "google_client_config" "default" {}
 
-
 provider "google" {
   project = var.project_id
   region  = var.region
@@ -50,3 +49,80 @@ module "users_service_gke" {
   enable_vertical_pod_autoscaling = true
   master_authorized_networks = var.master_authorized_networks
 }
+
+resource "kubernetes_namespace" "users_service" {
+  metadata {
+    labels = {
+      mylabel = "users-service-1"
+    }
+
+    name = "users-service-1"
+  }
+}
+
+#
+#resource "kubernetes_deployment" "users_service" {
+#  metadata {
+#    name = "users-service"
+#    labels = {
+#      app = "users-service"
+#    }
+#    namespace = "users-service-1"
+#  }
+#
+#  spec {
+#    replicas = 3
+#
+#    selector {
+#      match_labels = {
+#        app = "users-service"
+#      }
+#    }
+#
+#    template {
+#      metadata {
+#        labels = {
+#          app = "users-service"
+#          actorSystemName = "users-service"
+#        }
+#      }
+#
+#      spec {
+#        container {
+#          image = var.image_url
+#          name  = "users-service"
+#
+#          resources {
+#            limits = {
+#              cpu    = "0.5"
+#              memory = "512Mi"
+#            }
+#            requests = {
+#              cpu    = "250m"
+#              memory = "50Mi"
+#            }
+#          }
+#
+#          liveness_probe {
+#            http_get {
+#              path = "/"
+#              port = 80
+#
+#              http_header {
+#                name  = "X-Custom-Header"
+#                value = "Awesome"
+#              }
+#            }
+#
+#            initial_delay_seconds = 3
+#            period_seconds        = 3
+#          }
+#        }
+#      }
+#    }
+#  }
+#
+#  depends_on = [
+#    null_resource.docker_publish
+#  ]
+#}

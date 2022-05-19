@@ -1,8 +1,8 @@
-module "artifactregistry" {
-  source = "../../modules/artifactregistry"
+module "database" {
+  source = "../../modules/database"
 
   project_id = var.project_id
-  region     = var.region
+  region = var.region
 }
 
 module "gke" {
@@ -15,4 +15,5 @@ module "gke" {
   gke_ip_range_pods = var.gke_ip_range_pods
   gke_ip_range_services = var.gke_ip_range_services
   master_authorized_networks = var.master_authorized_networks
+  image_url = var.image_url
 }
